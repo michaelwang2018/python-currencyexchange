@@ -1,0 +1,190 @@
+#a1
+#Claire Hopkins cbh78 Michael Wang mgw55
+#9/14/2014
+
+"""Module for currency exchange
+
+This module provides several string parsing functions to implement a 
+simple currency exchange routine using an online currency service. 
+The primary function in this module is exchange."""
+
+import urllib2
+
+def after_space(s):
+    """Returns: The substring of s after the first space.
+    
+    Precondition: s is a string with at least one space in it."""
+    x = s.find(' ')
+    return s[x+1:]
+    
+    
+def before_comma_or_end(s):
+    """Returns: Substring of s up to but not including, the first comma.
+    
+    If the string does not contain a comma, then the function returns
+    all but the last element in the string.  THIS FUNCTION SHOULD NOT 
+    HAVE ANY IF STATEMENTS.
+    
+    Example: If s is 'a,b,c', this function returns 'a'.
+    Example: If s is 'abc}', it returns 'abc' (there is no comma).
+    
+    Precondition: s is a nonempty string"""
+    
+    y = s.find(',')
+    return s[0:y]
+      
+    
+def get_keyword_index(json,key):
+    """Returns: The index of the given key inside the JSON string 
+    (including the quote character). It returns -1 if key is not there.
+    
+    A key is considered to be any substring inside of double quotes. For 
+    example, in the string 
+    
+        'A "B" C'
+    
+    'B' is a key because it is inside double quote characters, while 'A'
+    and 'C' are not.  However, arguments passed to the parameter key are 
+    provided without any double quotes.
+    
+    Example: get_keyword_index('A "key" B','key') evaluates to 2.
+    Example: get_keyword_index('A key B "key" C','key') evaluates to 8, 
+    because it only chooses the instance of 'key' with quotes around it.
+    Example: get_keyword_index('A x B "key" C','x') evaluates to -1, 
+    because there is no instance of '"x"' in the string 'A x B "key" C'.
+    Example: get_keyword_index('A "x" B','"x"') violates the precondition, 
+    because the keyword argument is put in double quotes.
+    
+    Precondition: key is a string that does not contain double quotes, 
+    while json is a string."""
+    w = '"' + key + '"'
+    q = json.find(w)
+    return q 
+    
+    
+def has_error(json):
+    """Returns: True if json is an invalid response, and False otherwise.
+    
+    Given a JSON response to a currency query, this returns the boolean 
+    value that tells whether the query is invalid. There are two ways for 
+    the query to be invalid.  The first way is if the JSON response has 
+    a warning message in it. Those strings have the form
+    
+    '{"to": <code>, "rate": <value>, "warning": <message>, "from": <code>}'
+
+    For example, you enter an invalid number of dollars, you will get the 
+    message
+    
+    '{"to": "EUR", "rate": 0.75, "warning": "invalid quantity, ignored.", "from": "USD"}'
+    
+    The second way a JSON can be an invalid response is if it has an error 
+    message in it, like 
+    
+    '{"err": <description>}'
+    
+    For example, if you pass a query with invalid currency code, you will 
+    get the message
+    
+    '{"err": "failed to parse response from xe.com."}'
+    
+    Be warned that both the warning and error messages can change; they are 
+    not restricted to the examples above.  If there is neither an error 
+    message nor a warning, this function returns False.
+    
+    Precondition: json is the response to a currency query."""
+    e = json.find("err")
+    #e == -1
+    t = json.find("warning")
+    return (t > -1 or e > -1)
+    
+    #if e < 0:
+    #    return true
+    #else:
+    #    return false
+  
+    
+def get_value(json,key):
+    """Returns: The JSON value (as a string) associated with the given key.
+
+    The value is substring after the keyword but before  the first comma 
+    (or the curly brace at the end). If the value is in double quotes, those 
+    double quotes should be included as part of the substring.
+    
+    Example: get_value('{"to": "EUR", "rate": 0.75443, "from": "USD", "v": 1.88}','to')
+    evaluates to '"EUR"'
+    Example: get_value('{"to": "EUR", "rate": 0.75443, "from": "USD", "v": 1.88}','v')
+    evaluates to '1.88' (still a string)
+    
+    Precondition: key is a string that does not contain double quotes,
+    while json is a JSON response string that has key as a valid keyword."""
+    y = len(key)
+    u = json.find(key)
+    p = u+y
+    i = json.find(',', p)
+    o = json[p+3:i]
+    return o
+
+
+def currency_response(currency_from, currency_to, amount_from):
+    """Returns: a JSON string that is a response to a currency query.
+    
+    A currency query converts amount_from money in currency 
+    currency_from to the currency currency_to. The response 
+    should be a string of the form
+    
+        '{"to": <new>, "rate": <exchange>, "from": <old>, "v": <amount>}'
+    
+    The values for "from" and "to" are the name for the original and 
+    new currencies, respectively.  The value for "rate" is the exchange
+    rate, while "v" is the value in the new currency.
+    
+    If the query is invalid, the JSON will have a keyword "err" 
+    instead.
+    
+    Precondition: currency_from and currency_to are of type string,
+    while amount_from is a float."""
+    import urllib2
+    #print 's;fjdskljfklsdaf'
+    #import urllib
+    #z = urllib2.geturl('http://cs1110.cs.cornell.edu/2014fa/a1/calculator.php?from=' + currency_from + '&to=' + currency_to + '&q=' + amount_from)
+    z = urllib2.urlopen('http://cs1110.cs.cornell.edu/2014fa/a1/calculator.php?from=' + currency_from + '&to=' + currency_to + '&q=' + str(amount_from))
+    #return
+    #print 'DSAFLKFJDSLKFJDSLKFJDSALFKDSJFDSL'
+    return z.read()
+    #print 'dsaf;kjdflkjfadsljfslkjfs'
+    
+    #m = z.read()
+    #return m
+       
+    
+def iscurrency(currency):
+    """Returns: True if currency is a valid (3 letter code for a) currency. 
+    It returns False otherwise.
+
+    Precondition: currency is a string."""
+    import urllib2
+    d = urllib2.urlopen('http://cs1110.cs.cornell.edu/2014fa/a1/calculator.php?from=' + str(currency) + '&to=USD&q=6.90')
+    f = d.read()
+    g = has_error(f)
+    return not g
+    
+        
+def exchange(currency_from, currency_to, amount_from):
+    """Returns: amount of currency received in the given exchange.
+
+    In this exchange, the user is changing amount_from money in 
+    currency currency_from to the currency currency_to. The value 
+    returned represents the amount in currency currency_to.
+
+    The value returned has type float.
+
+    Precondition: currency_from and currency_to are of type string,
+    and are both valid three-letter currency codes.  The value
+    amount_from is a float"""
+    h = urllib2.urlopen('http://cs1110.cs.cornell.edu/2014fa/a1/calculator.php?from=' + currency_from + '&to=' + currency_to + '&q=' + str(amount_from))
+    j = h.read()
+    k = j[j.find('"v"')+4:-1]
+    n=float(k)
+    #return (amount_from + ' ' + currency_from + ' is equal to ' + k + ' ' + currency_to)
+    return n
+

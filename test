@@ -1,0 +1,109 @@
+"""Unit test for module a1
+
+When run as a script, this module invokes several procedures that 
+test the various functions in the module a1."""
+
+import cornelltest
+import a1
+
+def testA():
+    
+    #cornelltest.assert_equals('',
+    cornelltest.assert_equals('space', a1.after_space("Word space"))
+    cornelltest.assert_equals('space before and after word', a1.after_space("fdsaf space before and after word"))
+    cornelltest.assert_equals('       a bunch of spaces in front', a1.after_space('        a bunch of spaces in front'))
+    cornelltest.assert_equals('    ', a1.after_space("nospacesuntilend     "))
+    cornelltest.assert_equals('SPACES', a1.after_space("CAPSLOCK SPACES"))
+    cornelltest.assert_equals('213324242', a1.after_space("NUMBERS!@##!@1111 213324242"))
+    cornelltest.assert_equals('    ', a1.after_space("     "))
+    
+    cornelltest.assert_equals('NoComm', a1.before_comma_or_end("NoComma"))
+    cornelltest.assert_equals('CAPSLOCK', a1.before_comma_or_end("CAPSLOCK,CAPSLOCK"))
+    cornelltest.assert_equals('fjdsfslotsofcommas', a1.before_comma_or_end("fjdsfslotsofcommas,,,,"))
+    cornelltest.assert_equals('', a1.before_comma_or_end(",commaupfirst"))
+    cornelltest.assert_equals('    ', a1.before_comma_or_end("    ,      "))
+    cornelltest.assert_equals('          ', a1.before_comma_or_end("          ,"))
+    cornelltest.assert_equals('commalast', a1.before_comma_or_end("commalast,"))
+    cornelltest.assert_equals('123132231', a1.before_comma_or_end("123132231,213321,312,312,312,312"))
+    
+    
+
+
+def testB():
+    
+    cornelltest.assert_equals( 18, a1.get_keyword_index('There are lots of "words"','words'))
+    cornelltest.assert_equals( 0, a1.get_keyword_index('"words""words""words"','words'))
+    cornelltest.assert_equals( 24, a1.get_keyword_index('There are words lots of "words"','words'))
+    cornelltest.assert_equals( 17, a1.get_keyword_index('                 "words"', 'words'))
+    cornelltest.assert_equals( 20, a1.get_keyword_index('01324576810923745698"words"34214423','words'))
+    cornelltest.assert_equals( -1, a1.get_keyword_index('Hello','words'))
+    
+    
+    cornelltest.assert_equals(True, a1.has_error('{"to": "EUR", "rate": 0.75, "warning": "invalid quantity, ignored.", "from": "USD"}'))
+    cornelltest.assert_equals(True, a1.has_error('{"err": <description>}'))
+    cornelltest.assert_equals(True, a1.has_error('{"err": "failed to parse response from xe.com."}'))
+    cornelltest.assert_equals(False, a1.has_error('{"to": "EUR", "rate": 0.75443, "from": "USD", "v": 1.88}'))
+    cornelltest.assert_equals(False, a1.has_error('{"to": "EUR", "rate": 0.77203, "from": "USD", "v": 1.93007500000000}'))
+    #a1.has_error('')
+    
+    
+    cornelltest.assert_equals('"EUR"', a1.get_value('{"to": "EUR", "rate": 0.75443, "from": "USD", "v": 1.88}','to'))
+    cornelltest.assert_equals('1.88', a1.get_value('{"to": "EUR", "rate": 0.75443, "from": "USD", "v": 1.88}','v'))
+    cornelltest.assert_equals('"USD"', a1.get_value('{"to": "EUR", "rate": 0.75443, "from": "USD", "v": 1.88}','from'))
+    cornelltest.assert_equals('0.75443', a1.get_value('{"to": "EUR", "rate": 0.75443, "from": "USD", "v": 1.88}','rate'))
+    cornelltest.assert_equals('1.93007500000000', a1.get_value('{"to": "EUR", "rate": 0.77203, "from": "USD", "v": 1.93007500000000}','v'))
+    #a1.get_value('','')
+  
+def testC():
+    
+    cornelltest.assert_equals('{"to": "EUR", "rate": 0.77203, "from": "USD", "v": 1.99955770000000}', a1.currency_response('USD', 'EUR', 2.59))
+    cornelltest.assert_equals('{"to": "BIF", "rate": 1534.99000, "from": "USD", "v": 0.15349900000000}',a1.currency_response('USD', 'BIF', .0001))
+    cornelltest.assert_equals('{"to": "EUR", "rate": 0.00132, "from": "CLP", "v": 1.31793107787291}',a1.currency_response('CLP', 'EUR', 1000.94))
+    cornelltest.assert_equals('{"to": "EUR", "rate": 2.00475, "from": "OMR", "v": 8.62043365359647}',a1.currency_response('OMR', 'EUR', 4.30))
+    cornelltest.assert_equals('{"to": "AED", "rate": 0.01015, "from": "ZWD", "v": 0.83729407294833}',a1.currency_response('ZWD', 'AED', 82.50))
+    cornelltest.assert_equals('{"to": "STD", "rate": 104.58261, "from": "DJF", "v": 7288.36218059801922}',a1.currency_response('DJF', 'STD', 69.69))
+    cornelltest.assert_equals('{"err": "failed to parse response from xe.com."}',a1.currency_response('THISSHOULDPRODUCEANERROR', 'GYD', 12))
+    cornelltest.assert_equals('{"err": "failed to parse response from xe.com."}',a1.currency_response('TND', 'MAKEANERROR', 12))
+    cornelltest.assert_equals('{"to": "GYD", "rate": 116.84124, "warning": "invalid quantity, ignored.", "from": "TND"}',a1.currency_response('TND', 'GYD', 'NOTANUMBER'))
+    cornelltest.assert_equals('{"to": "GYD", "rate": 116.84124, "from": "TND", "v": 1402.09485941493904}',a1.currency_response('TND', 'GYD', 12))
+    #a1.currency_response('USD', 'EUR', '2.59')
+
+
+def testD():
+    
+    cornelltest.assert_equals(False, a1.iscurrency('ABC'))
+    cornelltest.assert_equals(False, a1.iscurrency('ZZZ'))
+    cornelltest.assert_equals(True, a1.iscurrency('USD'))
+    cornelltest.assert_equals(False, a1.iscurrency('usd'))
+    cornelltest.assert_equals(False, a1.iscurrency(' USD'))
+    cornelltest.assert_equals(False, a1.iscurrency('TTT'))
+    cornelltest.assert_equals(True, a1.iscurrency('ZWD'))
+    cornelltest.assert_equals(False, a1.iscurrency('ThisIsNotACurrencyJustLike"usd","ZZZ","ABC"," USD",And"TTT"AreNot'))
+    cornelltest.assert_equals(False, a1.iscurrency('123'))
+    
+    cornelltest.assert_floats_equal(839.8018932701162, a1.exchange('CLP','BIF','320.79'))
+    cornelltest.assert_floats_equal(42.91920280446638, a1.exchange('OMR','AED','4.50'))
+    cornelltest.assert_floats_equal(23.48213926499033, a1.exchange('ZWD','DJF','46.90'))
+    cornelltest.assert_floats_equal(32423.43, a1.exchange('AED','AED','32423.43'))
+    cornelltest.assert_floats_equal(5.007431706714644e+33, a1.exchange('GYD','STD','54354353453453453453453453435435.3534'))
+    cornelltest.assert_floats_equal(1.2952864525989921e+23, a1.exchange('EUR','USD','99999999999999999999999.99'))
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+if __name__ == '__main__':
+        testA()
+        testB()
+        testC()
+        testD()
+        print "Module a1 passed all tests"
